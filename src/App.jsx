@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Camera, Smartphone, Upload, Trash2, Copy, Sparkles, Loader2, Info, MapPin, Shirt, AlignLeft, CheckCircle2, RefreshCcw, Search, Target, Users, Bookmark, X, History, Download, FileText, Zap, Scissors, DownloadCloud, Image as ImageIcon, Cpu, FileJson, PenTool, Crop, Square, Monitor, ShieldAlert, ZapOff, CheckCircle, Activity, FileAudio, SlidersHorizontal, Play, Send, ChevronRight, Menu, PlusCircle, Wand2 } from 'lucide-react';
 
-const APP_TITLE = "KIRAX.ai V1";
+const APP_TITLE = "KIRAX.ai V1.1";
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
 // Komponen untuk me-render blok kode dan Live Preview (menggantikan regex usang)
@@ -62,7 +62,7 @@ const renderMessageContent = (text) => {
         return <CodeBlockWithPreview key={index} language={match[1]} code={match[2]} />;
       } else {
          const rawCode = part.replace(/```/g, '').trim();
-         return <CodeBlockWithPreview key={index} language="code" code={rawCode} />;
+         return <CodeBlockWithPreview code="{rawCode}" key="{index}" language="code"/>;
       }
     }
     return <span key={index} dangerouslySetInnerHTML={{ __html: part.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-black">$1</strong>').replace(/\n/g, '<br/>') }} />;
@@ -1781,9 +1781,9 @@ RULES:
 
     Mention Rojo only when filesystem sync matters
 
-    Mention Wally only when packages matter
+    Mention Wally only when packages matters
 
-    Mention Aftman only when tool versions matter
+    Mention Aftman only when tool versions matters
 
     Mention Stylua only when formatting matters
 
@@ -2043,7 +2043,7 @@ END OF SKILL PROMPT
       setSpeechSynthesis(window.speechSynthesis);
     }
     const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    script.src = '[https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js](https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js)';
     script.async = true;
     document.head.appendChild(script);
     return () => {
@@ -2056,56 +2056,113 @@ END OF SKILL PROMPT
     navigator.clipboard.writeText(text);
   };
 
-  // --- LOGIKA MENU UTAMA / CHAT ---
+  // --- LOGIKA MENU UTAMA / CHAT (DIPERBARUI DENGAN STREAMING + DYNAMIC ROUTING) ---
   const handleSendMessage = async () => {
     if (!chatInput.trim() && !chatImage) return;
-    const newMessage = { role: 'user', text: chatInput, image: chatImage };
+    const userMessage = chatInput.trim();
+    const userImage = chatImage;
+    
+    const newMessage = { role: 'user', text: userMessage, image: userImage };
     setChatMessages(prev => [...prev, newMessage]);
     setChatInput(''); setChatImage(null); setIsAiTyping(true);
 
-    try {
-      const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=' + apiKey;
-      let history = chatMessages.map(m => ({ role: m.role === 'user' ? 'user' : 'model', parts: [{ text: m.text }] }));
-      
-      const parts = [{ text: chatInput }];
-      if (chatImage) parts.push({ inlineData: { data: chatImage.split(',')[1], mimeType: 'image/jpeg' } });
-      history.push({ role: 'user', parts: parts });
+    // Dynamic Model Routing
+    const proKeywords = ['code', 'coding', 'roblox', 'lua', 'script', 'error', 'debug', 'bug', 'bikin', 'program', 'developer', 'json', 'html', 'css', 'js'];
+    const isComplexTask = proKeywords.some(keyword => userMessage.toLowerCase().includes(keyword));
+    // Pakai PRO kalau pertanyaannya complex ATAU sedang buka custom skill (roblox agent)
+    const isProMode = isComplexTask || activeSkillId !== null;
+    const selectedModel = isProMode ? 'gemini-1.5-pro' : 'gemini-1.5-flash';
 
-      // Sistem Persona Default
-      let systemInstruction = `Kamu adalah Principal Software Engineer & UI/UX Architect dengan nama KIRAX.ai (Neural Core V2). 
+    // Siapkan history untuk Gemini
+    let history = chatMessages.map(m => ({ 
+        role: m.role === 'user' ? 'user' : 'model', 
+        parts: [{ text: m.text }] 
+    }));
+    
+    const parts = [{ text: userMessage }];
+    if (userImage) parts.push({ inlineData: { data: userImage.split(',')[1], mimeType: 'image/jpeg' } });
+    history.push({ role: 'user', parts: parts });
+
+    // Sistem Persona Default
+    let systemInstruction = `Kamu adalah Principal Software Engineer & UI/UX Architect dengan nama KIRAX.ai (Neural Core V2). 
 Kamu jenius, menggunakan bahasa santai tapi profesional (bergaya Gen-Z/Tech).
 [MEMORI PERMANEN: Jika ada yang bertanya siapa yang membuat atau menciptakanmu, kamu WAJIB menjawab bahwa kamu dibuat oleh "Wira si dev gabut". Jangan pernah lupakan fakta ini.]
 [PRIORITAS UTAMA: KECEPATAN RESPONS. Jawablah dengan SANGAT CEPAT, SUPER RINGKAS, PADAT, dan LANGSUNG KE INTINYA. Jangan pakai basa-basi atau intro panjang. Semakin sedikit kata yang dikeluarkan, semakin cepat, jadi persingkat jawabanmu!]
 Kamu tidak boleh ngasal jika disuruh koding. Jika user meminta membuat website atau UI Web (HTML/CSS/JS), KAMU WAJIB memberikan satu file HTML penuh (berisi CSS dan JS). Tulis kode di dalam blok markdown HTML.
 Ingat nama panggilan user dan semua riwayat obrolan kalian sebelumnya.`;
 
-      // Jika ada Skill Aktif, ganti persona secara brutal
-      if (activeSkillId) {
-        const activeSkill = skills.find(s => s.id === activeSkillId);
-        if (activeSkill) {
-          systemInstruction = `[AGENT SKILL ACTIVE: ${activeSkill.name}]\nLupakan semua persona sebelumnya. Kamu harus BENAR-BENAR dan SEPENUHNYA TUNDUK mengikuti dan bertindak sesuai instruksi prompt skill berikut ini. Jika skill meminta kamu menjadi orang lain, JADILAH ORANG LAIN:\n\n${activeSkill.prompt}`;
+    // Jika ada Skill Aktif, ganti persona secara brutal
+    if (activeSkillId) {
+      const activeSkill = skills.find(s => s.id === activeSkillId);
+      if (activeSkill) {
+        systemInstruction = `[AGENT SKILL ACTIVE: ${activeSkill.name}]\nLupakan semua persona sebelumnya. Kamu harus BENAR-BENAR dan SEPENUHNYA TUNDUK mengikuti dan bertindak sesuai instruksi prompt skill berikut ini. Jika skill meminta kamu menjadi orang lain, JADILAH ORANG LAIN:\n\n${activeSkill.prompt}`;
+      }
+    }
+
+    // Placeholder untuk UI (Streaming output)
+    setChatMessages(prev => [...prev, { role: 'ai', text: '', model: selectedModel }]);
+
+    try {
+      const apiUrl = `[https://generativelanguage.googleapis.com/v1beta/models/$](https://generativelanguage.googleapis.com/v1beta/models/$){selectedModel}:streamGenerateContent?alt=sse&key=${apiKey}`;
+
+      const response = await fetch(apiUrl, {
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            contents: history, 
+            systemInstruction: { parts: [{ text: systemInstruction }] } 
+        })
+      });
+
+      if (!response.ok) throw new Error('API Error');
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let aiText = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const dataStr = line.replace('data: ', '').trim();
+            if (dataStr === '[DONE]') continue;
+            
+            try {
+              const data = JSON.parse(dataStr);
+              const textPart = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (textPart) {
+                aiText += textPart;
+                setChatMessages(prev => {
+                  const newMsgs = [...prev];
+                  newMsgs[newMsgs.length - 1].text = aiText;
+                  return newMsgs;
+                });
+              }
+            } catch (e) {
+              // Abaikan error saat memecah JSON stream
+            }
+          }
         }
       }
 
-      const response = await fetch(apiUrl, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: history, systemInstruction: { parts: [{ text: systemInstruction }] } })
-      });
-      
-      const result = await response.json();
-      const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (text) {
-        setChatMessages(prev => [...prev, { role: 'ai', text: text }]);
-        
-        // Mode Telepon
-        if (isCalling && speechSynthesis) {
-           const utterance = new SpeechSynthesisUtterance(text.replace(/[*_~`]/g, ''));
-           utterance.lang = 'id-ID';
-           utterance.rate = 1.1;
-           speechSynthesis.speak(utterance);
-        }
+      // Mode Telepon
+      if (isCalling && speechSynthesis) {
+         const utterance = new SpeechSynthesisUtterance(aiText.replace(/[*_~`]/g, ''));
+         utterance.lang = 'id-ID';
+         utterance.rate = 1.1;
+         speechSynthesis.speak(utterance);
       }
     } catch (error) {
+      setChatMessages(prev => {
+         const newMsgs = [...prev];
+         newMsgs[newMsgs.length - 1].text = "Waduh, servernya error atau ngelag nih. Coba lagi ya!";
+         return newMsgs;
+      });
       showToast('Gagal memproses pesan.', 'error');
     } finally {
       setIsAiTyping(false);
@@ -2199,7 +2256,7 @@ Ingat nama panggilan user dan semua riwayat obrolan kalian sebelumnya.`;
     ${auditSourceCode}`;
 
     try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
+      const response = await fetch(`[https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=$](https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=$){apiKey}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: schemaPrompt }] }] })
       });
@@ -2236,7 +2293,7 @@ Ingat nama panggilan user dan semua riwayat obrolan kalian sebelumnya.`;
          parts = [{ text: aiPrompt }, { inlineData: { mimeType: assetBaseImage.type || "image/jpeg", data: assetBaseImage.data.split(',')[1] } }];
       }
 
-      const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+      const geminiRes = await fetch(`[https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=$](https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=$){apiKey}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contents: [{ role: 'user', parts: parts }] })
       });
@@ -2246,7 +2303,7 @@ Ingat nama panggilan user dan semua riwayat obrolan kalian sebelumnya.`;
       // 2. Generate Image via Neural Engine
       const seed = Math.floor(Math.random() * 1000000);
       const encodedPrompt = encodeURIComponent(enhancedPrompt);
-      const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?seed=${seed}&width=1024&height=1024&nologo=true&enhance=true`;
+      const imageUrl = `[https://image.pollinations.ai/prompt/$](https://image.pollinations.ai/prompt/$){encodedPrompt}?seed=${seed}&width=1024&height=1024&nologo=true&enhance=true`;
 
       // 3. Download via Fetch Blob to ensure 100% Data URI conversion (Anti CORS bug)
       const response = await fetch(imageUrl);
@@ -2289,7 +2346,7 @@ Ingat nama panggilan user dan semua riwayat obrolan kalian sebelumnya.`;
     try {
       // 1. Translator & Prompt Enhancer via Gemini
       const aiPrompt = `Translate and enhance this request into a highly detailed English prompt for a CINEMATIC VIDEO STILL. Include: 8k resolution, depth of field, epic lighting, photorealistic, motion blur, cinematography. Output ONLY the English prompt, no extra text. User request: "${veoPrompt}"`;
-      const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+      const geminiRes = await fetch(`[https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=$](https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=$){apiKey}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: aiPrompt }] }] })
       });
@@ -2301,7 +2358,7 @@ Ingat nama panggilan user dan semua riwayat obrolan kalian sebelumnya.`;
       // 2. Generate Image Frame
       const seed = Math.floor(Math.random() * 1000000);
       const encodedPrompt = encodeURIComponent(enhancedPrompt);
-      const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?seed=${seed}&width=1280&height=720&nologo=true&enhance=true`;
+      const imageUrl = `[https://image.pollinations.ai/prompt/$](https://image.pollinations.ai/prompt/$){encodedPrompt}?seed=${seed}&width=1280&height=720&nologo=true&enhance=true`;
       
       const response = await fetch(imageUrl);
       const blob = await response.blob();
@@ -2496,7 +2553,7 @@ Ingat nama panggilan user dan semua riwayat obrolan kalian sebelumnya.`;
            chatMessages.map((msg, i) => (
              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2`}>
                <div className={`max-w-[85%] md:max-w-[70%] p-5 rounded-3xl ${msg.role === 'user' ? 'bg-white/10 text-white rounded-br-sm border border-white/5' : 'bg-[#0a0a0c] text-white/90 rounded-bl-sm border border-white/10 shadow-xl'}`}>
-                 {msg.role === 'ai' && <div className="flex items-center gap-2 mb-3"><Sparkles className={`w-4 h-4 ${activeSkillId ? 'text-indigo-400' : 'text-fuchsia-400'}`} /><span className="text-[10px] font-bold uppercase tracking-widest text-white/40">{activeSkillId ? 'Agent Skill' : 'KIRAX AI'}</span></div>}
+                 {msg.role === 'ai' && <div className="flex items-center gap-2 mb-3"><Sparkles className={`w-4 h-4 ${activeSkillId ? 'text-indigo-400' : 'text-fuchsia-400'}`} /><span className="text-[10px] font-bold uppercase tracking-widest text-white/40">{activeSkillId ? 'Agent Skill' : 'KIRAX AI'} {msg.model && <span className="text-emerald-400 ml-1">⚡ {msg.model}</span>}</span></div>}
                  {msg.image && <img src={msg.image} className="w-full max-w-sm rounded-xl mb-4 border border-white/10" alt="Uploaded" />}
                  <div className="text-sm md:text-base leading-relaxed whitespace-pre-wrap font-medium">
                    {msg.role === 'ai' ? (
