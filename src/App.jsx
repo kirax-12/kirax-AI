@@ -2103,7 +2103,7 @@ Ingat nama panggilan user dan semua riwayat obrolan kalian sebelumnya.`;
     setChatMessages(prev => [...prev, { role: 'ai', text: '', model: selectedModel }]);
 
     try {
-      const apiUrl = `[https://generativelanguage.googleapis.com/v1beta/models/$](https://generativelanguage.googleapis.com/v1beta/models/$){selectedModel}:streamGenerateContent?alt=sse&key=${apiKey}`;
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:streamGenerateContent?alt=sse&key=${apiKey}`;
 
       const response = await fetch(apiUrl, {
         method: 'POST', 
