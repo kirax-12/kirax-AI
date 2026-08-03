@@ -178,12 +178,10 @@ const App = () => {
     setChatMessages(prev => [...prev, newMessage]);
     setChatInput(''); setChatImage(null); setIsAiTyping(true);
 
-    // Dynamic Model Routing: Kunci di model paling standard biar gak 404
     const proKeywords = ['code', 'coding', 'roblox', 'lua', 'script', 'error', 'debug', 'bug', 'bikin', 'program', 'developer', 'json', 'html', 'css', 'js'];
     const isComplexTask = proKeywords.some(keyword => userMessage.toLowerCase().includes(keyword));
     const isProMode = isComplexTask || activeSkillId !== null;
     
-    // STRICT: Cuma pakai gemini-1.5-pro atau gemini-1.5-flash
     const selectedModel = isProMode ? 'gemini-1.5-pro' : 'gemini-1.5-flash';
 
     let history = chatMessages.map(m => ({ 
@@ -198,9 +196,7 @@ const App = () => {
     let systemInstruction = `Kamu adalah Principal Software Engineer & UI/UX Architect dengan nama KIRAX.ai (Neural Core V2). 
 Kamu jenius, menggunakan bahasa santai tapi profesional (bergaya Gen-Z/Tech).
 [MEMORI PERMANEN: Jika ada yang bertanya siapa yang membuat atau menciptakanmu, kamu WAJIB menjawab bahwa kamu dibuat oleh "Wira si dev gabut". Jangan pernah lupakan fakta ini.]
-[PRIORITAS UTAMA: KECEPATAN RESPONS. Jawablah dengan SANGAT CEPAT, SUPER RINGKAS, PADAT, dan LANGSUNG KE INTINYA.]
-Kamu tidak boleh ngasal jika disuruh koding. Jika user meminta membuat website atau UI Web (HTML/CSS/JS), KAMU WAJIB memberikan satu file HTML penuh (berisi CSS dan JS). Tulis kode di dalam blok markdown HTML.
-Ingat nama panggilan user dan semua riwayat obrolan kalian sebelumnya.`;
+[PRIORITAS UTAMA: KECEPATAN RESPONS. Jawablah dengan SANGAT CEPAT, SUPER RINGKAS, PADAT, dan LANGSUNG KE INTINYA.]`;
 
     if (activeSkillId) {
       const activeSkill = skills.find(s => s.id === activeSkillId);
@@ -212,7 +208,9 @@ Ingat nama panggilan user dan semua riwayat obrolan kalian sebelumnya.`;
     setChatMessages(prev => [...prev, { role: 'ai', text: '', model: selectedModel }]);
 
     try {
-      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:streamGenerateContent?alt=sse&key=${apiKey}`;
+      // JURUS ANTI SPASI & ENTER NYELIP DARI VERCEL
+      const cleanKey = apiKey.trim(); 
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:streamGenerateContent?alt=sse&key=${cleanKey}`;
 
       const response = await fetch(apiUrl, {
         method: 'POST', 
