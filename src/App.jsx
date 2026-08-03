@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Camera, Smartphone, Upload, Trash2, Copy, Sparkles, Loader2, Info, MapPin, Shirt, AlignLeft, CheckCircle2, RefreshCcw, Search, Target, Users, Bookmark, X, History, Download, FileText, Zap, Scissors, DownloadCloud, Image as ImageIcon, Cpu, FileJson, PenTool, Crop, Square, Monitor, ShieldAlert, ZapOff, CheckCircle, AudioWaveform, FileAudio, SlidersHorizontal, Play, Send, ChevronRight, Menu, PlusCircle, Wand2 } from 'lucide-react';
 
 const APP_TITLE = "KIRAX.ai";
-const apiKey = ""; 
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
 // Komponen untuk me-render blok kode dan Live Preview (menggantikan regex usang)
 const CodeBlockWithPreview = ({ code, language }) => {
