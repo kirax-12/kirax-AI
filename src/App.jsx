@@ -2043,7 +2043,7 @@ END OF SKILL PROMPT
       setSpeechSynthesis(window.speechSynthesis);
     }
     const script = document.createElement('script');
-    script.src = '[https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js](https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js)';
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js(https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js)';
     script.async = true;
     document.head.appendChild(script);
     return () => {
@@ -2071,7 +2071,7 @@ END OF SKILL PROMPT
     const isComplexTask = proKeywords.some(keyword => userMessage.toLowerCase().includes(keyword));
     // Pakai PRO kalau pertanyaannya complex ATAU sedang buka custom skill (roblox agent)
     const isProMode = isComplexTask || activeSkillId !== null;
-    const selectedModel = isProMode ? 'gemini-1.5-pro' : 'gemini-1.5-flash';
+    const selectedModel = isProMode ? 'gemini-1.5-pro-latest' : 'gemini-1.5-flash-latest';
 
     // Siapkan history untuk Gemini
     let history = chatMessages.map(m => ({ 
