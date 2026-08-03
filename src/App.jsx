@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Camera, Smartphone, Upload, Trash2, Copy, Sparkles, Loader2, Info, MapPin, Shirt, AlignLeft, CheckCircle2, RefreshCcw, Search, Target, Users, Bookmark, X, History, Download, FileText, Zap, Scissors, DownloadCloud, Image as ImageIcon, Cpu, FileJson, PenTool, Crop, Square, Monitor, ShieldAlert, ZapOff, CheckCircle, AudioWaveform, FileAudio, SlidersHorizontal, Play, Send, ChevronRight, Menu, PlusCircle, Wand2 } from 'lucide-react';
+import { Camera, Smartphone, Upload, Trash2, Copy, Sparkles, Loader2, Info, MapPin, Shirt, AlignLeft, CheckCircle2, RefreshCcw, Search, Target, Users, Bookmark, X, History, Download, FileText, Zap, Scissors, DownloadCloud, Image as ImageIcon, Cpu, FileJson, PenTool, Crop, Square, Monitor, ShieldAlert, ZapOff, CheckCircle, Activity, FileAudio, SlidersHorizontal, Play, Send, ChevronRight, Menu, PlusCircle, Wand2 } from 'lucide-react';
 
 const APP_TITLE = "KIRAX.ai";
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
@@ -2472,7 +2472,7 @@ Ingat nama panggilan user dan semua riwayat obrolan kalian sebelumnya.`;
                <div className="w-32 h-32 rounded-full bg-indigo-500/20 animate-ping absolute inset-0"></div>
                <div className="w-32 h-32 rounded-full bg-indigo-500/40 animate-pulse absolute inset-0 delay-75"></div>
                <div className="w-32 h-32 bg-indigo-600 rounded-full flex items-center justify-center relative z-10 shadow-[0_0_50px_rgba(79,70,229,0.5)]">
-                  <AudioWaveform className="w-12 h-12 text-white animate-bounce" />
+                  <Activity className="w-12 h-12 text-white animate-bounce" />
                </div>
             </div>
             <h2 className="text-2xl font-black text-white mt-12 tracking-widest uppercase">Neural Voice Session</h2>
@@ -2521,7 +2521,7 @@ Ingat nama panggilan user dan semua riwayat obrolan kalian sebelumnya.`;
            </label>
            
            <button onClick={handleVoiceCall} className={`p-4 rounded-2xl cursor-pointer transition-all border border-white/10 flex items-center justify-center flex-shrink-0 shadow-lg active:scale-95 group ${isCalling ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30 border-red-500/30 animate-pulse' : 'bg-[#11131a] hover:bg-indigo-500/20 text-white/50 hover:text-indigo-400'}`}>
-             <AudioWaveform className="w-5 h-5 group-hover:scale-110 transition-transform" />
+             <Activity className="w-5 h-5 group-hover:scale-110 transition-transform" />
            </button>
 
            <div className="flex-1 bg-[#11131a] border border-white/10 rounded-2xl p-2 pl-5 focus-within:border-white/30 focus-within:bg-white/5 transition-all flex items-center shadow-lg relative">
@@ -2780,7 +2780,7 @@ Ingat nama panggilan user dan semua riwayat obrolan kalian sebelumnya.`;
     <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-8 animate-in fade-in pb-32">
       <div className="text-center space-y-3 mb-10">
         <div className="inline-flex items-center justify-center p-3 md:p-4 bg-amber-500/10 rounded-2xl md:rounded-3xl border border-amber-500/20 shadow-[0_0_30px_rgba(245,158,11,0.2)]">
-           <AudioWaveform className="text-amber-400 w-8 h-8 md:w-10 md:h-10" />
+           <Activity className="text-amber-400 w-8 h-8 md:w-10 md:h-10" />
         </div>
         <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-white/90 drop-shadow-md">Audio Bypass</h2>
         <p className="text-white/50 text-sm md:text-lg font-medium">Bypass filter copyright Roblox dengan Pitch/Tempo Matrix.</p>
@@ -2826,7 +2826,7 @@ Ingat nama panggilan user dan semua riwayat obrolan kalian sebelumnya.`;
 
            {!isProcessingAudio && !processedAudioUrl && (
              <div className="text-white/30 text-center space-y-4 opacity-50">
-               <AudioWaveform className="w-16 h-16 mx-auto" />
+               <Activity className="w-16 h-16 mx-auto" />
                <p className="text-xs font-bold uppercase tracking-[0.3em]">Menunggu Data</p>
              </div>
            )}
@@ -3176,7 +3176,7 @@ Ingat nama panggilan user dan semua riwayat obrolan kalian sebelumnya.`;
             { id: 'auditor', icon: <ShieldAlert />, label: 'Code Auditor' },
             { id: 'asset', icon: <ImageIcon />, label: 'Gambar Generator' },
             { id: 'veo', icon: <Monitor />, label: 'VEO 3 Generator' },
-            { id: 'audio', icon: <AudioWaveform />, label: 'Audio Bypass' },
+            { id: 'audio', icon: <Activity />, label: 'Audio Bypass' },
             { id: 'prompt', icon: <FileJson />, label: 'Prompt Generator' }
           ].map(item => (
             <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold ${activeTab === item.id ? 'bg-indigo-500 text-white shadow-[0_0_20px_rgba(99,102,241,0.3)]' : 'text-white/50 hover:bg-white/5 hover:text-white'}`}>
@@ -3206,7 +3206,7 @@ Ingat nama panggilan user dan semua riwayat obrolan kalian sebelumnya.`;
             { id: 'auditor', icon: <ShieldAlert />, label: 'Code Auditor' },
             { id: 'asset', icon: <ImageIcon />, label: 'Gambar Generator' },
             { id: 'veo', icon: <Monitor />, label: 'VEO 3 Generator' },
-            { id: 'audio', icon: <AudioWaveform />, label: 'Audio Bypass' },
+            { id: 'audio', icon: <Activity />, label: 'Audio Bypass' },
             { id: 'prompt', icon: <FileJson />, label: 'Prompt Generator' }
           ].map(item => (
             <button key={item.id} onClick={() => { setActiveTab(item.id); setIsMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold ${activeTab === item.id ? 'bg-indigo-500 text-white' : 'text-white/50'}`}>
